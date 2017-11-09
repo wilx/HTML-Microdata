@@ -3,7 +3,6 @@ package HTML::Microdata;
 use strict;
 use warnings;
 
-use HTML::TreeBuilder::LibXML;
 use Hash::MultiValue;
 use Scalar::Util qw(refaddr);
 use JSON;
@@ -16,6 +15,7 @@ sub new {
 	bless {
 		items => [],
 		base  => $args{base} ? URI->new($args{base}) : undef,
+                libxml => $args{libxml} ? 1 : undef
 	}, $class;
 }
 
@@ -48,7 +48,18 @@ sub _parse {
 	my ($self, $content) = @_;
 
 	my $items = {};
-	my $tree = HTML::TreeBuilder::LibXML->new_from_content($content);
+	my $tree;
+        if ($self->{libxml}) {
+            use HTML::TreeBuilder::LibXML;
+            $tree = HTML::TreeBuilder::LibXML->new();
+        }
+        else {
+            use HTML::TreeBuilder::XPath;
+            $tree = HTML::TreeBuilder::XPath->new();
+        }
+        $tree->ignore_unknown(0);
+        $tree->parse($content);
+        $tree->eof;
 	my $scopes = $tree->findnodes('//*[@itemscope]');
 	my $number = 0;
 
