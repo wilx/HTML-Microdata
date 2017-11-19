@@ -15,7 +15,7 @@ sub new {
 	bless {
 		items => [],
 		base  => $args{base} ? URI->new($args{base}) : undef,
-                libxml => $args{libxml} ? 1 : undef
+		libxml => $args{libxml} ? 1 : undef
 	}, $class;
 }
 
@@ -49,30 +49,30 @@ sub _parse {
 
 	my $items = {};
 	my $tree;
-        if ($self->{libxml}) {
-            use HTML::TreeBuilder::LibXML;
-            $tree = HTML::TreeBuilder::LibXML->new();
-        }
-        else {
-            use HTML::TreeBuilder::XPath;
-            $tree = HTML::TreeBuilder::XPath->new();
-        }
-        $tree->ignore_unknown(0);
-        $tree->parse($content);
-        $tree->eof;
+	if ($self->{libxml}) {
+		use HTML::TreeBuilder::LibXML;
+		$tree = HTML::TreeBuilder::LibXML->new();
+	}
+	else {
+		use HTML::TreeBuilder::XPath;
+		$tree = HTML::TreeBuilder::XPath->new();
+	}
+	$tree->ignore_unknown(0);
+	$tree->parse($content);
+	$tree->eof;
 	my $scopes = $tree->findnodes('//*[@itemscope]');
 	my $number = 0;
 
 	for my $scope (@$scopes) {
 		my $type = $scope->attr('itemtype');
-		my $id   = $scope->attr('itemid');
+		my $id	 = $scope->attr('itemid');
 
 		unless ($scope->id) {
 			$scope->id($number++);
 		}
 
 		my $item = {
-			($id   ? (id   => $id)   : ()),
+			($id   ? (id   => $id)	 : ()),
 			($type ? (type => $type) : ()),
 			properties => Hash::MultiValue->new,
 		};
